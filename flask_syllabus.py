@@ -4,6 +4,8 @@ displaying a course schedule.
 
 """
 
+CLASS_START = "2016-01-04"
+
 import flask
 from flask import render_template
 from flask import request
@@ -43,15 +45,37 @@ app.logger.setLevel(logging.DEBUG)
 @app.route("/index")
 @app.route("/schedule")
 def index():
-  app.logger.debug("Main page entry")
-  if 'schedule' not in flask.session:
-      app.logger.debug("Processing raw schedule file")
-      raw = open('static/schedule.txt')
-      flask.session['schedule'] = pre.process(raw)
+    app.logger.debug("Main page entry")
+    if 'schedule' not in flask.session:
+        app.logger.debug("Processing raw schedule file")
+        raw = open('static/schedule.txt')
+        flask.session['schedule'] = pre.process(raw)
+        for week in flask.session['schedule']:
+            do_date_stuff(week)
+        
 
-  return flask.render_template('syllabus.html')
+    return flask.render_template('syllabus.html')
 
+def do_date_stuff(week_dict):
+    """
+    Takes a dictionary representation of a week from pre.process,
+    and adds "date" and "is_now" entries.
+    """
+    week_start = arrow.get(CLASS_START).replace(weeks=+(int(week_dict['week']) - 1))
+    # week 1 gets +0 weeks, week 2 gets +1 week, etc.
+    week_dict['date'] = week_start.format("YYYY-MM-DD")
+    week_dict['is_now'] = date_in_range(arrow.utcnow(), week_start.span('week'))
 
+def date_in_range(date_object, range_object):
+    """
+    Determines if an arrow date object is in an arrow date range object
+    (which is actually just a tuple containing the start and end dates).
+    
+    Note that arrow ranges can contain more than two dates, but this only
+    checks between the first two in the tuple.
+    """
+    return (date_object >= range_object[0] and date_object < range_object[1])
+    
 @app.errorhandler(404)
 def page_not_found(error):
     app.logger.debug("Page not found")

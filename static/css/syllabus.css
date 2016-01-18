@@ -30,11 +30,22 @@ tr.even {
     background-color: rgb(224,213,179);
 }
 
+tr.current {
+    /* Blue */ 
+    background-color: rgb(151,177,216);
+}
+
 .class-schedule .week {
     
     font-weight: bolder;
     font-size: 150%; 
     text-align: center; 
+}
+
+.class-schedule .date {
+    padding-left: 3ex;
+    padding-right: 3ex;
+    /* leave as default */
 }
 
 .class-schedule .topic {
